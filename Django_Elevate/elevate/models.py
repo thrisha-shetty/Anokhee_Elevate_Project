@@ -44,11 +44,16 @@ class User(AbstractBaseUser):
 
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_login = models.CharField(max_length=200, unique=True, validators=[alphanumeric_validator])##ldap creds
-    user_role = models.CharField(max_length=50)
+    user_role = models.CharField(max_length=50) ## here it should display all 14 roles 
     user_firstname = models.CharField(max_length=100, null=False, validators=[alphanumeric_space_validator])
     user_lastname = models.CharField(max_length=100, null=False, validators=[alphanumeric_space_validator])
+    user_image = models.CharField(max_length=500, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    no_of_points = models.IntegerField(null=True, default=0)
+    no_of_awards = models.IntegerField(null=True, default=0)
+    
+
 
     objects = UserManager()
 
@@ -74,16 +79,10 @@ class TeamsTable(models.Model):
 class TeamMembersTable(models.Model):
     employee_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     team = models.ForeignKey(TeamsTable, to_field='team_id', on_delete=models.CASCADE, related_name='members')
-    employee_firstname = models.CharField(max_length=100)
-    employee_lastname = models.CharField(max_length=100)
     user = models.OneToOneField(User, to_field='user_id', on_delete=models.CASCADE, related_name='team_member',default=None)
-    employee_image = models.CharField(max_length=500, null=True)
-    employee_role = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    no_of_points = models.IntegerField(null=True, default=0)
-    no_of_awards = models.IntegerField(null=True, default=0)
-
 
 class SprintTable(models.Model):
     sprint_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -107,24 +106,21 @@ class AwardsTable(models.Model):
 
 class NominationsTable(models.Model):
     nomination_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    employee = models.ForeignKey(TeamMembersTable, to_field='employee_id', on_delete=models.CASCADE, related_name='nominations_received')
+    employee_nominated = models.UUIDField( editable=False)
     sprint = models.ForeignKey(SprintTable, to_field='sprint_id', on_delete=models.CASCADE, related_name='nominations')
     award = models.ForeignKey(AwardsTable, to_field='award_id', on_delete=models.CASCADE, related_name='nominations')
-    nominator = models.CharField(max_length=200, unique=True)
+    nominator = models.UUIDField( editable=False)
     comments = models.TextField(null=False)
     nomination_date = models.DateTimeField(auto_now_add=True)
+    no_of_nominations_left = models.IntegerField(default=5)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    ## create index with employee_id and sprint_id
-    class Meta:
-        indexes = [
-            models.Index(fields=['employee', 'sprint']),
-        ]
 
 class JiraTasksTable(models.Model):
     tasks_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(TeamMembersTable, to_field='employee_id', on_delete=models.CASCADE, related_name='jira_tasks')
     tasks = models.JSONField()
     sprint = models.ForeignKey(SprintTable, to_field='sprint_id', on_delete=models.CASCADE, related_name='jira_tasks')
-    nominations_left = models.IntegerField(default=5)
+    no_of_points = models.IntegerField(null=True, default=0)
+    no_of_awards = models.IntegerField(null=True, default=0)
