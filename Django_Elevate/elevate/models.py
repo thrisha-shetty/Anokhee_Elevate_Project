@@ -8,7 +8,7 @@ from django.core.validators import RegexValidator
 from django.core.validators import RegexValidator
 
 class UserManager(BaseUserManager):
-    def create_user(self, user_login, password=None, user_role="Employee",user_firstname=None, user_lastname=None):
+    def create_user(self, user_login, password=None, user_role="Employee",user_firstname=None, user_lastname=None,user_image=None):
         if not user_login or not user_firstname or not user_lastname:
             raise ValueError("User login, first name, and last name are required")
 
@@ -16,19 +16,19 @@ class UserManager(BaseUserManager):
             user_login=user_login,
             user_role=user_role,
             user_firstname=user_firstname,
-            user_lastname=user_lastname
+            user_lastname=user_lastname,
+            user_image=user_image,
+            no_of_points=0,
+            no_of_awards=0
         )
         user.set_password(password) 
 
-        if user_role == "Employee":
+        if user_role == "Admin" or user_role == "Art Manager":
+            user.is_active = False
+            user.is_staff = True
+        else:
             user.is_active = True
             user.is_staff = False
-        elif user_role == "Admin":
-            user.is_active = False
-            user.is_staff = True
-        elif user_role == "Art Manager":
-            user.is_active = False
-            user.is_staff = True
         user.save(using=self._db)
         return user
     
