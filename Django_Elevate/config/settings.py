@@ -153,6 +153,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",   # React
     "http://localhost:4200",   # Angular
     "http://127.0.0.1:3000",
+    "http://localhost:8080"
 ]
 
 CORS_ALLOW_HEADERS = [
