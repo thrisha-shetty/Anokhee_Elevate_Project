@@ -112,7 +112,6 @@ class NominationsTable(models.Model):
     nominator = models.UUIDField( editable=False)
     comments = models.TextField(null=False)
     nomination_date = models.DateTimeField(auto_now_add=True)
-    no_of_nominations_left = models.IntegerField(default=5)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -120,7 +119,7 @@ class NominationsTable(models.Model):
 class JiraTasksTable(models.Model):
     tasks_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(TeamMembersTable, to_field='employee_id', on_delete=models.CASCADE, related_name='jira_tasks')
-    tasks = models.JSONField()
+    tasks = models.JSONField(null=True)
     sprint = models.ForeignKey(SprintTable, to_field='sprint_id', on_delete=models.CASCADE, related_name='jira_tasks')
     no_of_points = models.IntegerField(null=True, default=0)
     no_of_awards = models.IntegerField(null=True, default=0)

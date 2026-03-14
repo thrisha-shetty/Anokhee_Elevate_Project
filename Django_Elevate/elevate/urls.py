@@ -19,6 +19,8 @@ urlpatterns=[
     path('art-employees/', get_art_employees_view.as_view()),
     path('awards/', manage_award_view.as_view()),
     path('get-current-sprint/', get_current_sprint_view.as_view()),
+    path('update-art-manager-request/', update_art_manager_request_view.as_view()),
+    path('get-user-employee-details/', get_user_employee_details_view.as_view()),
 
 
 
