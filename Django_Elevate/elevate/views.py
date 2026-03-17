@@ -675,19 +675,15 @@ class get_leaderboard_art_level_view(APIView):
         if not sprint_id:
             return Response({"error": "No active sprint found for the user's ART"}, status=status.HTTP_400_BAD_REQUEST)
         
-
-
         # Get all team members in this ART
-        team_members = TeamMembersTable.objects.filter(team__art=art_id).select_related('user')
+        team_members = TeamMembersTable.objects.filter(team_art_art_id=art_id).select_related('user')
         
         leaderboard = []
         for member in team_members:
             user = member.user
-            
             # Fetch all nominations for this employee
-            nominations = NominationsTable.objects.filter(nominee__employee_id=member.employee_id, sprint_id=sprint_id).select_related('award')
-            
-            # Group nominations by award
+            nominations = NominationsTable.objects.filter(nominee=member, sprint_id=sprint_id).select_related('award')
+            # Group nominations by award  
             awards_dict = {}
             for nom in nominations:
                 award_id_str = str(nom.award.award_id)
@@ -699,14 +695,12 @@ class get_leaderboard_art_level_view(APIView):
                     }
                 
                 awards_dict[award_id_str]["total_nomniations_for_award"] += 1
-                
                 # Fetch nominator details
                 try:
-                    nominator_user = User.objects.get(user_id=nom.nominator)
+                    nominator_user = User.objects.get(user_id=nom.nominator.user.user_id) if nom.nominator and nom.nominator.user else None 
                     nominator_name = f"{nominator_user.user_firstname} {nominator_user.user_lastname}".strip()
                 except User.DoesNotExist:
                     nominator_name = "Unknown"
-                    
                 awards_dict[award_id_str]["nominations_information"].append({
                     "nominator": nominator_name,
                     "nomination_date": nom.nomination_date.strftime("%Y-%m-%d") if nom.nomination_date else nom.created_at.strftime("%Y-%m-%d"),
@@ -714,7 +708,6 @@ class get_leaderboard_art_level_view(APIView):
                 })
             
             list_of_awards = list(awards_dict.values())
-            
             # Add to leaderboard if they have points or awards
             if (user.no_of_points and user.no_of_points > 0) or list_of_awards:
                 leaderboard.append({
@@ -724,10 +717,8 @@ class get_leaderboard_art_level_view(APIView):
                     "total_no_of_points": user.no_of_points or 0,
                     "List_of_awards": list_of_awards
                 })
-                
         # Sort leaderboard by total_no_of_points in descending order
         leaderboard.sort(key=lambda x: x["total_no_of_points"], reverse=True)
-        
         return Response(leaderboard, status=status.HTTP_200_OK)
 
 class get_leaderboard_team_level_view(APIView):
